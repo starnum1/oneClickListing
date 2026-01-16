@@ -6,6 +6,7 @@ if (document.readyState === 'loading') {
 }
 
 let discountAmount = 2 // 默认减价金额
+let hideExtraSku = false // 是否关闭显示所有SKU（默认不关闭）
 
 function init() {
   createFloatingPanel()
@@ -22,6 +23,12 @@ function createFloatingPanel() {
       <label style="display:block;font-size:12px;margin-bottom:4px;color:#666;">减价金额 (元)</label>
       <input type="number" id="discount-input" value="2" step="0.01" min="0" 
         style="width:100%;padding:8px;border:1px solid #ddd;border-radius:4px;box-sizing:border-box;font-size:14px;">
+    </div>
+    <div style="margin-bottom:12px;">
+      <label style="display:flex;align-items:center;font-size:12px;color:#666;cursor:pointer;">
+        <input type="checkbox" id="hide-extra-sku" style="margin-right:6px;">
+        关闭显示所有SKU
+      </label>
     </div>
     <button id="start-btn" style="width:100%;padding:10px;background:#ff4d4f;color:white;border:none;border-radius:20px;cursor:pointer;font-size:14px;">
       一键上架
@@ -46,6 +53,7 @@ function createFloatingPanel() {
   // 绑定事件
   panel.querySelector('#start-btn').addEventListener('click', () => {
     discountAmount = parseFloat(panel.querySelector('#discount-input').value) || 2
+    hideExtraSku = panel.querySelector('#hide-extra-sku').checked
     clickTargetButton()
   })
 
@@ -69,10 +77,27 @@ function clickTargetButton() {
       el.click()
       console.log('已点击函数图标')
 
-      // 3. 等待表格出现后，自动填充价格（支持分页）
-      setTimeout(() => {
-        processAllPages()
-      }, 500)
+      // 3. 如果勾选了关闭显示所有SKU，点击开关
+      if (hideExtraSku) {
+        setTimeout(() => {
+          const shadowRoot = document.querySelector('maozierp-ui')?.shadowRoot
+          // 找到已开启的开关并点击关闭
+          const switchBtn = shadowRoot?.querySelector('.ant-switch-checked')
+          if (switchBtn) {
+            switchBtn.click()
+            console.log('已关闭显示所有SKU')
+            // 等待SKU加载后再填充价格
+            setTimeout(() => processAllPages(), 800)
+          } else {
+            processAllPages()
+          }
+        }, 500)
+      } else {
+        // 4. 等待表格出现后，自动填充价格（支持分页）
+        setTimeout(() => {
+          processAllPages()
+        }, 500)
+      }
     })
   } else {
     console.log('未找到"一键上架"按钮')
