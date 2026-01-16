@@ -57,6 +57,31 @@ function createFloatingPanel() {
 
   document.body.appendChild(panel)
 
+  // 拖动功能
+  let isDragging = false
+  let offsetX, offsetY
+
+  panel.querySelector('h3').style.cursor = 'move'
+  
+  panel.querySelector('h3').addEventListener('mousedown', (e) => {
+    isDragging = true
+    offsetX = e.clientX - panel.offsetLeft
+    offsetY = e.clientY - panel.offsetTop
+    panel.style.userSelect = 'none'
+  })
+
+  document.addEventListener('mousemove', (e) => {
+    if (!isDragging) return
+    panel.style.left = (e.clientX - offsetX) + 'px'
+    panel.style.top = (e.clientY - offsetY) + 'px'
+    panel.style.right = 'auto'
+  })
+
+  document.addEventListener('mouseup', () => {
+    isDragging = false
+    panel.style.userSelect = ''
+  })
+
   // 绑定事件
   panel.querySelector('#start-btn').addEventListener('click', () => {
     discountAmount = parseFloat(panel.querySelector('#discount-input').value) || 2
