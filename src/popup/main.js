@@ -1,15 +1,7 @@
-document.getElementById('fillBtn').addEventListener('click', async () => {
-  const data = {
-    name: document.getElementById('name').value,
-    email: document.getElementById('email').value
-  }
-
+document.getElementById('clickBtn').addEventListener('click', async () => {
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true })
 
-  chrome.tabs.sendMessage(tab.id, {
-    action: 'autoFill',
-    data
-  })
+  chrome.tabs.sendMessage(tab.id, { action: 'clickButton' })
 
   window.close()
 })
