@@ -45,15 +45,76 @@ function clickTargetButton() {
     btn.click()
     console.log('已点击"一键上架"按钮')
 
-    // 2. 等待函数图标出现后点击（在 maozierp-ui Shadow DOM 中）
+    // 2. 等待函数图标出现后点击
     waitForShadowElement('maozierp-ui', '.anticon-function', (el) => {
       el.click()
       console.log('已点击函数图标')
+
+      // 3. 等待表格出现后，自动填充价格（支持分页）
+      setTimeout(() => {
+        processAllPages()
+      }, 500)
     })
   } else {
     console.log('未找到"一键上架"按钮')
     alert('未找到"一键上架"按钮')
   }
+}
+
+// 处理所有分页
+function processAllPages() {
+  const shadowRoot = document.querySelector('maozierp-ui')?.shadowRoot
+  if (!shadowRoot) return
+
+  const tbody = shadowRoot.querySelector('.ant-table-tbody')
+  fillPrices(tbody)
+
+  // 检查是否有下一页
+  setTimeout(() => {
+    const nextBtn = shadowRoot.querySelector('.ant-pagination-next:not(.ant-pagination-disabled)')
+    if (nextBtn) {
+      nextBtn.click()
+      console.log('切换到下一页')
+      
+      // 等待新页面加载后继续处理
+      setTimeout(() => {
+        processAllPages()
+      }, 800)
+    } else {
+      console.log('所有页面处理完成')
+    }
+  }, 500)
+}
+
+// 遍历表格，原售价 - 2 填入我的售价
+function fillPrices(tbody) {
+  const rows = tbody.querySelectorAll('tr.ant-table-row')
+  let count = 0
+
+  rows.forEach((row, index) => {
+    // 获取原售价（第7列，格式：¥43.24）
+    const cells = row.querySelectorAll('td.ant-table-cell')
+    const originalPriceCell = cells[6] // 第7列（索引6）
+    const originalPriceText = originalPriceCell?.textContent?.trim()
+    
+    // 解析价格数字
+    const priceMatch = originalPriceText?.match(/[\d.]+/)
+    if (!priceMatch) return
+
+    const originalPrice = parseFloat(priceMatch[0])
+    const newPrice = (originalPrice - 2).toFixed(2)
+
+    // 找到"我的售价"输入框（id 格式：form_item_rows_X_price）
+    const priceInput = row.querySelector(`input[id="form_item_rows_${index}_price"]`)
+    if (priceInput) {
+      priceInput.value = newPrice
+      priceInput.dispatchEvent(new Event('input', { bubbles: true }))
+      priceInput.dispatchEvent(new Event('change', { bubbles: true }))
+      count++
+      console.log(`第${index + 1}行：原售价 ${originalPrice} → 我的售价 ${newPrice}`)
+    }
+  })
+  console.log(`当前页已填充 ${count} 行价格`)
 }
 
 // 等待元素出现
