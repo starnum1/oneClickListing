@@ -7,6 +7,7 @@ if (document.readyState === 'loading') {
 
 let discountAmount = 2 // 默认减价金额
 let hideExtraSku = false // 是否关闭显示所有SKU（默认不关闭）
+let autoSubmit = true // 是否自动点击上架按钮（默认点击）
 
 function init() {
   createFloatingPanel()
@@ -28,6 +29,12 @@ function createFloatingPanel() {
       <label style="display:flex;align-items:center;font-size:12px;color:#666;cursor:pointer;">
         <input type="checkbox" id="hide-extra-sku" style="margin-right:6px;">
         关闭显示所有SKU
+      </label>
+    </div>
+    <div style="margin-bottom:12px;">
+      <label style="display:flex;align-items:center;font-size:12px;color:#666;cursor:pointer;">
+        <input type="checkbox" id="auto-submit" checked style="margin-right:6px;">
+        自动上架至OZON
       </label>
     </div>
     <button id="start-btn" style="width:100%;padding:10px;background:#ff4d4f;color:white;border:none;border-radius:20px;cursor:pointer;font-size:14px;">
@@ -54,6 +61,7 @@ function createFloatingPanel() {
   panel.querySelector('#start-btn').addEventListener('click', () => {
     discountAmount = parseFloat(panel.querySelector('#discount-input').value) || 2
     hideExtraSku = panel.querySelector('#hide-extra-sku').checked
+    autoSubmit = panel.querySelector('#auto-submit').checked
     clickTargetButton()
   })
 
@@ -101,7 +109,6 @@ function clickTargetButton() {
     })
   } else {
     console.log('未找到"一键上架"按钮')
-    alert('未找到"一键上架"按钮')
   }
 }
 
@@ -126,6 +133,9 @@ function processAllPages() {
       }, 800)
     } else {
       console.log('所有页面处理完成')
+      if (autoSubmit) {
+        clickSubmitButton()
+      }
     }
   }, 500)
 }
@@ -159,6 +169,20 @@ function fillPrices(tbody) {
     }
   })
   console.log(`当前页已填充 ${count} 行价格`)
+}
+
+// 点击"一键上架至OZON"按钮
+function clickSubmitButton() {
+  const shadowRoot = document.querySelector('maozierp-ui')?.shadowRoot
+  const buttons = shadowRoot?.querySelectorAll('button.ant-btn-primary') || []
+  const submitBtn = [...buttons].find(b => b.textContent.includes('一键上架至OZON'))
+  
+  if (submitBtn) {
+    submitBtn.click()
+    console.log('已点击"一键上架至OZON"按钮')
+  } else {
+    console.log('未找到"一键上架至OZON"按钮')
+  }
 }
 
 // 等待元素出现
