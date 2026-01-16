@@ -10,6 +10,9 @@ let hideExtraSku = false // 是否关闭显示所有SKU（默认不关闭）
 let autoSubmit = true // 是否自动点击上架按钮（默认点击）
 
 function init() {
+  // 只在 ozon.ru/product/ 页面显示
+  if (!window.location.href.includes('ozon.ru/product/')) return
+  
   createFloatingPanel()
 }
 
