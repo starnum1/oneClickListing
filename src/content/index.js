@@ -1,39 +1,58 @@
-// 等待 DOM 加载完成后创建悬浮按钮
+// 等待 DOM 加载完成后初始化
 if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', createFloatingButton)
+  document.addEventListener('DOMContentLoaded', init)
 } else {
-  createFloatingButton()
+  init()
 }
 
-function createFloatingButton() {
-  // 避免重复创建
-  if (document.getElementById('auto-click-floating-btn')) return
+let discountAmount = 2 // 默认减价金额
 
-  const btn = document.createElement('button')
-  btn.textContent = '一键上架'
-  btn.id = 'auto-click-floating-btn'
+function init() {
+  createFloatingPanel()
+}
 
-  // 样式
-  Object.assign(btn.style, {
+function createFloatingPanel() {
+  if (document.getElementById('auto-listing-panel')) return
+
+  const panel = document.createElement('div')
+  panel.id = 'auto-listing-panel'
+  panel.innerHTML = `
+    <h3 style="margin:0 0 12px 0;font-size:14px;">一键上架助手</h3>
+    <div style="margin-bottom:12px;">
+      <label style="display:block;font-size:12px;margin-bottom:4px;color:#666;">减价金额 (元)</label>
+      <input type="number" id="discount-input" value="2" step="0.01" min="0" 
+        style="width:100%;padding:8px;border:1px solid #ddd;border-radius:4px;box-sizing:border-box;font-size:14px;">
+    </div>
+    <button id="start-btn" style="width:100%;padding:10px;background:#ff4d4f;color:white;border:none;border-radius:20px;cursor:pointer;font-size:14px;">
+      一键上架
+    </button>
+  `
+
+  Object.assign(panel.style, {
     position: 'fixed',
     top: '100px',
     right: '20px',
     zIndex: '999999',
-    padding: '10px 20px',
-    background: '#ff4d4f',
-    color: 'white',
-    border: 'none',
-    borderRadius: '20px',
-    cursor: 'pointer',
-    fontSize: '14px',
-    boxShadow: '0 2px 8px rgba(0,0,0,0.2)'
+    width: '200px',
+    padding: '16px',
+    background: 'white',
+    borderRadius: '8px',
+    boxShadow: '0 2px 12px rgba(0,0,0,0.15)',
+    fontFamily: 'system-ui, sans-serif'
   })
 
-  btn.addEventListener('click', clickTargetButton)
+  document.body.appendChild(panel)
+
+  // 绑定事件
+  panel.querySelector('#start-btn').addEventListener('click', () => {
+    discountAmount = parseFloat(panel.querySelector('#discount-input').value) || 2
+    clickTargetButton()
+  })
+
+  // hover 效果
+  const btn = panel.querySelector('#start-btn')
   btn.addEventListener('mouseenter', () => btn.style.background = '#ff7875')
   btn.addEventListener('mouseleave', () => btn.style.background = '#ff4d4f')
-
-  document.body.appendChild(btn)
 }
 
 function clickTargetButton() {
@@ -102,7 +121,7 @@ function fillPrices(tbody) {
     if (!priceMatch) return
 
     const originalPrice = parseFloat(priceMatch[0])
-    const newPrice = (originalPrice - 2).toFixed(2)
+    const newPrice = (originalPrice - discountAmount).toFixed(2)
 
     // 找到"我的售价"输入框（id 格式：form_item_rows_X_price）
     const priceInput = row.querySelector(`input[id="form_item_rows_${index}_price"]`)
